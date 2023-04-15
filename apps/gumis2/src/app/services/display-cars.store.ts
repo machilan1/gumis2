@@ -3,12 +3,13 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ComponentStore, tapResponse } from '@ngrx/component-store';
 import { CarsService } from './cars.service';
-import { tap } from 'rxjs/operators';
+import { switchMap, tap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 interface DisplayCarsState {
   loading: boolean;
   cars: Car[];
-  selectedCar?: string;
+  selectedCar?: Car;
   equipments?: Equipment[];
   selectedEquipment?: Equipment;
 }
@@ -36,21 +37,58 @@ export class DisplayCarsStore extends ComponentStore<DisplayCarsState> {
     super(initialState);
   }
 
-  readonly fetchCars = this.effect<void>(() => {
-    this.patchState({ loading: true });
+  readonly fetchCars = this.effect(() => {
     return this.carsService.fetchCars().pipe(
       tapResponse(
         (cars) => this.patchState({ cars, loading: false }),
         (err) => {
-          alert(err);
           this.patchState({ loading: false });
+          alert('No cars');
         }
       )
     );
   });
 
   readonly fetchCar = this.effect<string>((id$) => {
-    this.patchState({ loading: true });
-    return id$.pipe();
+    return id$.pipe(
+      tap(() => this.patchState({ loading: true })),
+      switchMap((id) => this.carsService.fetchCar(id)),
+      tapResponse(
+        (car) => this.patchState({ selectedCar: car, loading: false }),
+        (err) => {
+          this.patchState({ loading: false });
+          alert(err);
+        }
+      )
+    );
   });
+
+  readonly updateCar = this.effect(
+    (selectedCarID: string, body: Partial<Car>) => {
+      return selectedCar$.pipe(
+        tap(() => this.patchState({ loading: true })),
+        switchMap((car) => this.carsService.updateCarData(car.id, body)),
+        tapResponse(
+          (car) => this.patchState({ selectedCar: car, loading: false }),
+          (err) => {
+            alert(err);
+            this.patchState({ loading: false });
+          }
+        )
+      );
+    }
+  );
+
+  //   readonly createCar = this.effect((car: Partial<Car>) => {
+  //     return this.carsService.createCar(car).pipe(
+  //       tapResponse(
+  //         (car) => this.patchState({ cars: [...this.getValue().cars, car] }),
+  //         (err) => {
+  //           alert(err);
+  //         }
+  //       )
+  //     );
+  //   });
+  // }
+  //todo  editCar(id: string,edits: Partial<Car>)
 }

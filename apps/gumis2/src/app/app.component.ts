@@ -1,16 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { DisplayCarComponent } from './display-car/display-car.component';
 import { InformationCarComponent } from './information-car/information-car.component';
+import { RouterOutlet, ActivatedRoute } from '@angular/router';
 @Component({
   standalone: true,
-  imports: [DisplayCarComponent, InformationCarComponent],
+  imports: [DisplayCarComponent, InformationCarComponent, RouterOutlet],
   selector: 'gumis2-root',
-  template: `
-    <gumis2-display-car></gumis2-display-car>
-    <gumis2-information-car></gumis2-information-car>
-  `,
+  template: ` <router-outlet></router-outlet> `,
   styles: [],
 })
 export class AppComponent {
+  route = inject(ActivatedRoute);
   title = 'gumis2';
 }

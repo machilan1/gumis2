@@ -8,9 +8,11 @@ export class AppService {
       id: '1',
       make: 'Ford',
       model: 'Fusion',
-      year: 2019,
-      color: 'red',
+      year: 2018,
+      color: 'Dark Grey',
       price: 20000,
+      image:
+        'https://hips.hearstapps.com/hmg-prod/images/2020-ford-fusion-mmp-1-1568742907.jpeg?crop=0.643xw:0.541xh;0.316xw,0.429xh&resize=1200:*',
       equipments: [
         {
           id: '1',
@@ -24,8 +26,9 @@ export class AppService {
       make: 'Tesla',
       model: 'Model 3',
       year: 2019,
-      color: 'red',
+      color: 'Pitch Black',
       price: 50000,
+      image: 'https://cdn.motor1.com/images/mgl/y2mbjm/s3/tesla-model-3.webp',
       equipments: [
         {
           id: '1',
@@ -42,6 +45,7 @@ export class AppService {
   ];
 
   getCars() {
+    console.log('Cars Fetched');
     return this.cars;
   }
 
