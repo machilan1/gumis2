@@ -3,18 +3,19 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ComponentStore, tapResponse } from '@ngrx/component-store';
 import { CarsService } from './cars.service';
-import { switchMap, tap } from 'rxjs/operators';
+import { switchMap, takeUntil, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
+import { Param } from '@nestjs/common';
 
 interface DisplayCarsState {
   loading: boolean;
   cars: Car[];
   selectedCar?: Car;
-  equipments?: Equipment[];
-  selectedEquipment?: Equipment;
+  selectedCarId?: string;
 }
 
 const initialState: DisplayCarsState = {
+  selectedCar: undefined,
   loading: false,
   cars: [],
 };
@@ -22,14 +23,20 @@ const initialState: DisplayCarsState = {
 export class DisplayCarsStore extends ComponentStore<DisplayCarsState> {
   carsService = inject(CarsService);
   readonly cars$ = this.select((state) => state.cars);
-  readonly selectedCar$ = this.select((state) => state.selectedCar);
-  readonly selectedEquipment$ = this.select((state) => state.selectedEquipment);
-  readonly equipments$ = this.select((state) => state.equipments);
+  readonly selectedId$ = this.select((state) => state.selectedCarId);
+  readonly selectedCar$ = this.select(
+    this.cars$,
+    this.selectedId$,
+    (cars, selectedId) => {
+      return cars.find((car) => car.id === selectedId);
+    }
+  );
+  // readonly selectedCar$ = this.select((state) => state.selectedCar);
+  readonly length$ = this.select((state) => state.cars.length);
   readonly loading$ = this.select((state) => state.loading);
+  readonly body$ = this.select((state) => state.selectedCar);
   readonly vm$ = this.select({
     selectedCar: this.selectedCar$,
-    selectedEquipment: this.selectedEquipment$,
-    equipments: this.equipments$,
     cars: this.cars$,
     loading: this.loading$,
   });
@@ -37,47 +44,59 @@ export class DisplayCarsStore extends ComponentStore<DisplayCarsState> {
     super(initialState);
   }
 
-  readonly fetchCars = this.effect(() => {
-    return this.carsService.fetchCars().pipe(
-      tapResponse(
-        (cars) => this.patchState({ cars, loading: false }),
-        (err) => {
-          this.patchState({ loading: false });
-          alert('No cars');
-        }
-      )
-    );
-  });
-
-  readonly fetchCar = this.effect<string>((id$) => {
-    return id$.pipe(
+  readonly fetchCars = this.effect((trigger$: Observable<void>) => {
+    // console.log('fetchCars');
+    return trigger$.pipe(
       tap(() => this.patchState({ loading: true })),
-      switchMap((id) => this.carsService.fetchCar(id)),
-      tapResponse(
-        (car) => this.patchState({ selectedCar: car, loading: false }),
-        (err) => {
-          this.patchState({ loading: false });
-          alert(err);
-        }
+      switchMap(() =>
+        this.carsService.fetchCars().pipe(
+          tapResponse(
+            (cars) => this.patchState({ cars, loading: false }),
+            (err) => {
+              this.patchState({ loading: false });
+              alert('No cars');
+            }
+          )
+        )
       )
     );
   });
 
-  readonly updateCar = this.effect(
-    (selectedCarID: string, body: Partial<Car>) => {
-      return selectedCar$.pipe(
-        tap(() => this.patchState({ loading: true })),
-        switchMap((car) => this.carsService.updateCarData(car.id, body)),
-        tapResponse(
-          (car) => this.patchState({ selectedCar: car, loading: false }),
-          (err) => {
-            alert(err);
-            this.patchState({ loading: false });
-          }
+  readonly selectCar = this.effect((userId$: Observable<string>) => {
+    return userId$.pipe(
+      tap(() => this.patchState({ loading: true })),
+      switchMap((userId) =>
+        this.carsService.fetchCar(userId).pipe(
+          tapResponse(
+            (car) => {
+              this.patchState({ selectedCar: car, loading: false });
+              console.log(car);
+            },
+            (err) => {
+              this.patchState({ loading: false });
+              alert('No car is loaded');
+            }
+          )
         )
-      );
-    }
-  );
+      )
+    );
+  });
+  // readonly updateCar = this.effect((body: Observable<Partial<Car>>) => {
+  //   return this.selectedCar$.pipe(
+  //     tap(() => this.patchState({ loading: true })),
+  //     switchMap((car) =>
+  //       this.carsService.updateCarData(car.id, body).pipe(
+  //         tapResponse(
+  //           (car) => this.patchState({ selectedCar: car, loading: false }),
+  //           (err) => {
+  //             alert(err);
+  //             this.patchState({ loading: false });
+  //           }
+  //         )
+  //       )
+  //     )
+  //   );
+  // });
 
   //   readonly createCar = this.effect((car: Partial<Car>) => {
   //     return this.carsService.createCar(car).pipe(

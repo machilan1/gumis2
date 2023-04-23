@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Header,
-  Headers,
-  Param,
-  Patch,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 
 import { AppService } from './app.service';
 import { Car } from '@gumis2/data-access';
@@ -21,7 +12,7 @@ export class AppController {
     return this.appService.getCars();
   }
 
-  @Get('cars/:id')
+  @Get('cars/:id/')
   getCar(@Param('id') id: string) {
     return this.appService.getCar(id);
   }
@@ -31,8 +22,8 @@ export class AppController {
     return this.appService.updateCar(id, body);
   }
 
-  // @Post('cars/:id')
-  // createCar(@Body() body: Partial<Car>) {
-  //   return this.appService.createCar(body);
-  // }
+  @Post('cars/new')
+  addCar(@Body() body: Partial<Car>) {
+    return this.appService.addCar(body);
+  }
 }

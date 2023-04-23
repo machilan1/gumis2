@@ -1,6 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CarsService } from '../services/cars.service';
 import { DisplayCarsStore } from '../services/display-cars.store';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 
@@ -47,6 +46,22 @@ import { RouterLink, ActivatedRoute } from '@angular/router';
                 </a>
               </li>
             </ng-container>
+            <li class=" px-4 mx-4 ">
+              <a class="flex justify-center">
+                <div class="w-full h-fit py-8   shadow-lg p-4">
+                  <div
+                    class="h-64 w-full flex flex-col justify-center items-center"
+                  >
+                    <button
+                      [routerLink]="['/cars', 'new']"
+                      class="border-2 border-slate-800 h-8 w-fit px-4 text-gray-800 rounded-full hover:border-0 cursor-pointer hover:bg-blue-200 "
+                    >
+                      List a new car
+                    </button>
+                  </div>
+                </div>
+              </a>
+            </li>
           </ul>
         </div>
       </div>
@@ -55,13 +70,11 @@ import { RouterLink, ActivatedRoute } from '@angular/router';
   styles: [],
 })
 export class DisplayCarComponent implements OnInit {
-  carsService = inject(CarsService);
   displayCarsStore = inject(DisplayCarsStore);
+  route = inject(ActivatedRoute);
   vm$ = this.displayCarsStore.vm$;
 
-  route = inject(ActivatedRoute);
   ngOnInit() {
     this.displayCarsStore.fetchCars();
-    console.log(this.route.snapshot.paramMap.get('id'));
   }
 }

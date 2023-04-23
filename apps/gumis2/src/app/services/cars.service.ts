@@ -17,6 +17,6 @@ export class CarsService {
   }
 
   createCar(body: Partial<Car>) {
-    return this.http.post<Car>(`http://localhost:3000/api/cars`, body);
+    return this.http.post<Car>(`http://localhost:3000/api/cars/new`, body);
   }
 }

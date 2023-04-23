@@ -9,32 +9,39 @@ import {
 } from '@angular/forms';
 import { DisplayCarsStore } from '../services/display-cars.store';
 import { of } from 'rxjs';
-import { take, tap } from 'rxjs/operators';
+import { map, take, tap } from 'rxjs/operators';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { informationCarStore } from '../services/information-car.store';
 import { provideComponentStore } from '@ngrx/component-store';
 import { CarsService } from '../services/cars.service';
 import { Car } from '@gumis2/data-access';
 @Component({
-  selector: 'gumis2-information-car',
+  selector: 'gumis2-add-car',
   standalone: true,
   imports: [CommonModule, RouterLink, ReactiveFormsModule],
   template: `
-    <h1 class="text-4xl text-center py-6">Edit Car Informations</h1>
+    <h1 class="text-4xl text-center py-6">Add a new car</h1>
     <ng-container
       *ngIf="{
-        selectedCar: selectedCar$ | async,
-        loading: loading$ | async
+        img: img$ | async,
+        loading: loading$ | async,
+        length: length$ | async
       } as vm"
     >
       <div class="w-full flex flex-col items-center">
-        <ng-container *ngIf="vm.selectedCar">
-          <div>12312312312</div>
-          <img class="w-2/5" [src]="vm.selectedCar.image" alt="Car photo" />
-        </ng-container>
-        <form [formGroup]="form" class="flex flex-col" (ngSubmit)="onSave()">
+        <img class="w-2/5" [src]="vm.img" alt="Car photo" />
+
+        <form [formGroup]="form" class="flex flex-col">
+          <p>ID : {{ vm.length! + 1 }} (自動產生)</p>
+
+          <p>Image</p>
+          <input
+            type="text"
+            placeholder="Enter image URL"
+            formControlName="image"
+          />
           <p>Maker</p>
-          <input type="text" formControlName="make" value="123" />
+          <input type="text" formControlName="make" />
           <p>Model</p>
           <input type="text" formControlName="model" />
           <p>Year</p>
@@ -43,10 +50,10 @@ import { Car } from '@gumis2/data-access';
           <input type="text" formControlName="color" />
           <p>Price</p>
           <input type="text" formControlName="price" />
-          <!-- todo Fix the null problem -->
-          <ng-container *ngIf="vm.selectedCar!.equipments.length > 0">
-            <p>Equipments</p>
-          </ng-container>
+          <p>Equipments</p>
+          <div class="form-array">
+            <input type="text" formControlName="equipment" />
+          </div>
 
           <div class="flex justify-between py-4">
             <button
@@ -54,10 +61,10 @@ import { Car } from '@gumis2/data-access';
               type="button"
               class="bg-red-400 h-8 w-fit px-4 my-4 self-end text-gray-800 rounded-full cursor-pointer hover:bg-red-200 "
             >
-              Discard Changes
+              Cancel
             </button>
             <button
-              (click)="onSave()"
+              (click)="onCreate()"
               [routerLink]="['/cars']"
               type="submit"
               class="bg-blue-400 h-8 w-fit px-4 my-4 self-end text-gray-800 rounded-full cursor-pointer hover:bg-blue-200 "
@@ -81,6 +88,7 @@ import { Car } from '@gumis2/data-access';
       form > input {
         padding-left: 0.3rem;
         width: 20rem;
+        border-radius: 0.2rem;
         background-color: #f2f2f2;
         border: 1px solid grey;
       }
@@ -88,13 +96,15 @@ import { Car } from '@gumis2/data-access';
   ],
   providers: [provideComponentStore(informationCarStore)],
 })
-export class InformationCarComponent implements OnInit {
+export class AddCarComponent implements OnInit {
   route = inject(ActivatedRoute);
   informationCarStore = inject(informationCarStore);
   carService = inject(CarsService);
+  desplayCarStore = inject(DisplayCarsStore);
   selectedcar!: Car;
-
   form = new FormGroup({
+    id: new FormControl('', { nonNullable: true }),
+    image: new FormControl('', { nonNullable: true }),
     make: new FormControl('', { nonNullable: true }),
     model: new FormControl('', { nonNullable: true }),
     year: new FormControl(0, { nonNullable: true }),
@@ -102,22 +112,27 @@ export class InformationCarComponent implements OnInit {
     price: new FormControl(0, { nonNullable: true }),
     equipment: new FormArray([]),
   });
-
+  length$ = this.desplayCarStore.length$.pipe(
+    tap((length) => this.form.controls['id'].setValue((length + 1).toString()))
+  );
   loading$ = this.informationCarStore.loading$;
   selectedCar$ = this.informationCarStore.selectedCar$.pipe(
     tap((car) => this.form.patchValue(car)),
     tap((car) => (this.selectedcar = car))
   );
 
+  img$ = this.form.controls['image'].valueChanges.pipe(tap(console.log));
+
   ngOnInit(): void {
     this.route.params.pipe().subscribe((params) => {
+      this.desplayCarStore.fetchCars();
       this.informationCarStore.selectCar(params['id']);
       console.log('params: ', params['id']);
     });
   }
 
-  onSave() {
-    console.log('Saving');
-    this.informationCarStore.updateCar(this.form.value);
+  onCreate() {
+    console.log('Creating');
+    this.informationCarStore.createCar(this.form.value);
   }
 }

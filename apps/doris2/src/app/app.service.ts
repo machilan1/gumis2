@@ -17,7 +17,7 @@ export class AppService {
         {
           id: '1',
           name: 'Leather seats',
-          price: 1000,
+          equPrice: 1000,
         },
       ],
     },
@@ -33,12 +33,39 @@ export class AppService {
         {
           id: '1',
           name: 'Leather seats',
-          price: 1000,
+          equPrice: 1000,
         },
         {
           id: '2',
           name: 'Autopilot',
-          price: 10000,
+          equPrice: 10000,
+        },
+      ],
+    },
+    {
+      id: '3',
+      make: 'Mercedes Benz',
+      model: 'AMG GT63 S',
+      year: 2023,
+      color: 'White',
+      price: 700000,
+      image:
+        'https://carwow-uk-wp-2.imgix.net/GT-driving-front.jpg?auto=format&cs=tinysrgb&fit=clip&ixlib=rb-1.1.0&q=60&w=750',
+      equipments: [
+        {
+          id: '1',
+          name: 'Leather seats',
+          equPrice: 1000,
+        },
+        {
+          id: '2',
+          name: 'Autopilot',
+          equPrice: 10000,
+        },
+        {
+          id: '3',
+          name: 'AMG Performance Exhaust',
+          equPrice: 10000,
         },
       ],
     },
@@ -60,24 +87,30 @@ export class AppService {
   }
 
   updateCar(id: string, body: Partial<Car>) {
+    console.log(`Car (ID = ${id}) info updated`);
     const car = this.cars.find((car) => car.id === id);
-
     if (!car) {
       return {};
     }
+    Object.assign(car, body);
+    return car;
+  }
+  addCar(body: Partial<Car>) {
+    const car = {
+      id: '',
+      make: '',
+      model: '',
+      year: 0,
+      color: '',
+      price: 0,
+      image: '',
+      equipments: [],
+    };
 
     Object.assign(car, body);
 
+    this.cars.push(car);
+
     return car;
   }
-  // createCar(body: Partial<Car>) {
-  //   const car = {
-  //     id: Math.random().toString(),
-  //     ...body,
-  //   };
-
-  //   this.cars.push(car);
-
-  //   return car;
-  // }
 }

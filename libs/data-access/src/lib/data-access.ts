@@ -6,11 +6,11 @@ export interface Car {
   color: string;
   price: number;
   image: string;
-  equipments?: Equipment[];
+  equipments: Equipment[];
 }
 
 export interface Equipment {
   id: string;
   name: string;
-  price: number;
+  equPrice: number;
 }
