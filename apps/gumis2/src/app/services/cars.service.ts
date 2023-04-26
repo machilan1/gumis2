@@ -19,4 +19,7 @@ export class CarsService {
   createCar(body: Partial<Car>) {
     return this.http.post<Car>(`http://localhost:3000/api/cars/new`, body);
   }
+  deleteCar(carId: string) {
+    return this.http.patch<any>(`http://localhost:3000/api/cars/delete`, carId);
+  }
 }

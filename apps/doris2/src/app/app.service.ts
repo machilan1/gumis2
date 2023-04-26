@@ -72,7 +72,6 @@ export class AppService {
   ];
 
   getCars() {
-    console.log('Cars Fetched');
     return this.cars;
   }
 
@@ -106,11 +105,19 @@ export class AppService {
       image: '',
       equipments: [],
     };
-
     Object.assign(car, body);
 
     this.cars.push(car);
 
     return car;
+  }
+
+  deleteCar(id: string) {
+    console.log(id);
+    this.cars.splice(
+      this.cars.findIndex((x) => x.id === id),
+      1
+    );
+    return id;
   }
 }

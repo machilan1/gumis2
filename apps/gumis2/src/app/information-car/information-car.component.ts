@@ -5,11 +5,9 @@ import {
   FormControl,
   FormArray,
   ReactiveFormsModule,
-  Validators,
 } from '@angular/forms';
-import { DisplayCarsStore } from '../services/display-cars.store';
-import { of } from 'rxjs';
-import { take, tap } from 'rxjs/operators';
+
+import { tap } from 'rxjs/operators';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { informationCarStore } from '../services/information-car.store';
 import { provideComponentStore } from '@ngrx/component-store';
@@ -43,10 +41,36 @@ import { Car } from '@gumis2/data-access';
           <input type="text" formControlName="color" />
           <p>Price</p>
           <input type="text" formControlName="price" />
-          <!-- todo Fix the null problem -->
-          <ng-container *ngIf="vm.selectedCar!.equipments.length > 0">
-            <p>Equipments</p>
-          </ng-container>
+          <p>Equipments</p>
+          <div formArrayName="equipments">
+            <ng-container
+              *ngFor="
+                let equipment of getEquipmentControls().controls;
+                let i = index
+              "
+            >
+              <div [formGroupName]="i" class="block equip my-4">
+                <input
+                  type="text"
+                  class="bg-slate-300 text-center w-6 "
+                  formControlName="id"
+                />
+                <input
+                  type="text"
+                  class="bg-slate-300 mx-2 px-2 w-64"
+                  formControlName="name"
+                />
+                <input
+                  type="text"
+                  class="bg-slate-300 mx-2 w-fit"
+                  formControlName="equPrice"
+                />
+              </div>
+            </ng-container>
+            <button type="button" (click)="onAddEquipment()">
+              Add equipment
+            </button>
+          </div>
 
           <div class="flex justify-between py-4">
             <button
@@ -84,6 +108,10 @@ import { Car } from '@gumis2/data-access';
         background-color: #f2f2f2;
         border: 1px solid grey;
       }
+      .equip input {
+        background-color: #f2f2f2;
+        border: 1px solid grey;
+      }
     `,
   ],
   providers: [provideComponentStore(informationCarStore)],
@@ -100,13 +128,35 @@ export class InformationCarComponent implements OnInit {
     year: new FormControl(0, { nonNullable: true }),
     color: new FormControl('', { nonNullable: true }),
     price: new FormControl(0, { nonNullable: true }),
-    equipment: new FormArray([]),
+    equipments: new FormArray([]),
   });
 
   loading$ = this.informationCarStore.loading$;
   selectedCar$ = this.informationCarStore.selectedCar$.pipe(
-    tap((car) => this.form.patchValue(car)),
-    tap((car) => (this.selectedcar = car))
+    tap((car) => {
+      this.selectedcar = car;
+      this.form.patchValue({
+        make: this.selectedcar.make,
+        model: this.selectedcar.model,
+        year: this.selectedcar.year,
+        color: this.selectedcar.color,
+        price: this.selectedcar.price,
+      });
+    }),
+    tap(() => {
+      // eslint-disable-next-line prefer-const
+      for (let equipment of this.selectedcar.equipments) {
+        console.log('aaaaaa');
+        console.log(this.selectedcar);
+        this.getEquipmentControls().push(
+          new FormGroup({
+            id: new FormControl(equipment.id),
+            name: new FormControl(equipment.name),
+            equPrice: new FormControl(equipment.equPrice),
+          })
+        );
+      }
+    })
   );
 
   ngOnInit(): void {
@@ -118,6 +168,21 @@ export class InformationCarComponent implements OnInit {
 
   onSave() {
     console.log('Saving');
-    this.informationCarStore.updateCar(this.form.value);
+    const data = this.form.value;
+    console.log(data);
+    this.informationCarStore.updateCar(data);
+  }
+  onAddEquipment() {
+    const equipment = new FormGroup({
+      id: new FormControl(''),
+      name: new FormControl(''),
+      equPrice: new FormControl(0),
+    });
+
+    this.getEquipmentControls().push(equipment);
+  }
+
+  getEquipmentControls() {
+    return <FormArray>this.form.get('equipments');
   }
 }

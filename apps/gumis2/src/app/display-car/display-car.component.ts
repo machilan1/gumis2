@@ -32,6 +32,14 @@ import { RouterLink, ActivatedRoute } from '@angular/router';
                       <div>
                         <p>Color : {{ car.color }}</p>
                         <p>Price : {{ car.price }}</p>
+                        <div *ngIf="car.equipments.length > 0" class="block">
+                          <p><br /></p>
+                          <ng-container
+                            *ngFor="let equipment of car.equipments"
+                          >
+                            <p>{{ equipment.name }}</p>
+                          </ng-container>
+                        </div>
                       </div>
                       <div class="flex flex-col justify-center">
                         <button
@@ -39,6 +47,13 @@ import { RouterLink, ActivatedRoute } from '@angular/router';
                           class="bg-blue-400 h-8 w-fit px-4 text-gray-800 rounded-full cursor-pointer hover:bg-blue-200 "
                         >
                           Edit
+                        </button>
+
+                        <button
+                          (click)="onDelete('1')"
+                          class=" my-4 bg-red-400 h-8 w-fit px-4 text-gray-800 rounded-full cursor-pointer hover:bg-blue-200 "
+                        >
+                          Delete
                         </button>
                       </div>
                     </div>
@@ -76,5 +91,9 @@ export class DisplayCarComponent implements OnInit {
 
   ngOnInit() {
     this.displayCarsStore.fetchCars();
+  }
+  onDelete(id: string) {
+    this.displayCarsStore.deleteCar(id);
+    console.log('Deleting' + id);
   }
 }

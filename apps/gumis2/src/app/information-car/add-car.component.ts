@@ -51,8 +51,34 @@ import { Car } from '@gumis2/data-access';
           <p>Price</p>
           <input type="text" formControlName="price" />
           <p>Equipments</p>
-          <div class="form-array">
-            <input type="text" formControlName="equipment" />
+          <div formArrayName="equipments">
+            <ng-container
+              *ngFor="
+                let equipment of getEquipmentControls().controls;
+                let i = index
+              "
+            >
+              <div [formGroupName]="i" class="block equip my-4">
+                <input
+                  type="text"
+                  class="bg-slate-300 text-center w-6 "
+                  formControlName="id"
+                />
+                <input
+                  type="text"
+                  class="bg-slate-300 mx-2 px-2 w-64"
+                  formControlName="name"
+                />
+                <input
+                  type="text"
+                  class="bg-slate-300 mx-2 w-fit"
+                  formControlName="equPrice"
+                />
+              </div>
+            </ng-container>
+            <button type="button" (click)="onAddEquipment()">
+              Add equipment
+            </button>
           </div>
 
           <div class="flex justify-between py-4">
@@ -110,14 +136,13 @@ export class AddCarComponent implements OnInit {
     year: new FormControl(0, { nonNullable: true }),
     color: new FormControl('', { nonNullable: true }),
     price: new FormControl(0, { nonNullable: true }),
-    equipment: new FormArray([]),
+    equipments: new FormArray([]),
   });
   length$ = this.desplayCarStore.length$.pipe(
     tap((length) => this.form.controls['id'].setValue((length + 1).toString()))
   );
   loading$ = this.informationCarStore.loading$;
   selectedCar$ = this.informationCarStore.selectedCar$.pipe(
-    tap((car) => this.form.patchValue(car)),
     tap((car) => (this.selectedcar = car))
   );
 
@@ -134,5 +159,18 @@ export class AddCarComponent implements OnInit {
   onCreate() {
     console.log('Creating');
     this.informationCarStore.createCar(this.form.value);
+  }
+  onAddEquipment() {
+    const equipment = new FormGroup({
+      id: new FormControl(''),
+      name: new FormControl(''),
+      equPrice: new FormControl(0),
+    });
+
+    this.getEquipmentControls().push(equipment);
+  }
+
+  getEquipmentControls() {
+    return <FormArray>this.form.get('equipments');
   }
 }

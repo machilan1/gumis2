@@ -51,7 +51,10 @@ export class informationCarStore extends ComponentStore<InformationCarState> {
       switchMap((userId) =>
         this.carsService.fetchCar(userId).pipe(
           tapResponse(
-            (car) => this.patchState({ selectedCar: car, loading: false }),
+            (car) => {
+              this.patchState({ selectedCar: car, loading: false });
+              console.log(car);
+            },
             (err) => {
               this.patchState({ loading: false });
               alert('No car is loaded');

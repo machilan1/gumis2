@@ -81,6 +81,27 @@ export class DisplayCarsStore extends ComponentStore<DisplayCarsState> {
       )
     );
   });
+
+  readonly deleteCar = this.effect((carId: Observable<string>) => {
+    return carId.pipe(
+      tap(() => this.patchState({ loading: true })),
+      tap(console.log),
+      switchMap((id) =>
+        this.carsService.deleteCar(id).pipe(
+          tapResponse(
+            () => {
+              this.patchState({ loading: false });
+              alert('delete sent');
+            },
+            () => {
+              this.patchState({ loading: false });
+              alert('Something went wrong when deleting');
+            }
+          )
+        )
+      )
+    );
+  });
   // readonly updateCar = this.effect((body: Observable<Partial<Car>>) => {
   //   return this.selectedCar$.pipe(
   //     tap(() => this.patchState({ loading: true })),
