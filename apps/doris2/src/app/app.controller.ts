@@ -16,11 +16,7 @@ export class AppController {
   getCar(@Param('id') id: string) {
     return this.appService.getCar(id);
   }
-  @Patch('cars/delete')
-  deleteCar(@Body() id: string) {
-    console.log(id);
-    return this.appService.deleteCar(id);
-  }
+
   @Patch('cars/:id')
   updateCar(@Param('id') id: string, @Body() body: Partial<Car>) {
     return this.appService.updateCar(id, body);
@@ -28,6 +24,14 @@ export class AppController {
 
   @Post('cars/new')
   addCar(@Body() body: Partial<Car>) {
+    console.log(body);
     return this.appService.addCar(body);
+  }
+
+  @Post('cars/delete')
+  deleteCar(@Body() id: string) {
+    console.log('Someone tries to delete car with ID :' + id);
+    console.log(id);
+    return this.appService.deleteCar(id['id']);
   }
 }
